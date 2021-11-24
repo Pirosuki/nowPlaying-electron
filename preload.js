@@ -5,7 +5,7 @@ const {
 
 contextBridge.exposeInMainWorld('app', {
         send: (channel, data) => {
-            let validChannels = ['toMain', 'writeText', 'writeImage', 'getCurrentPlaying'];
+            let validChannels = ['toMain', 'writeText', 'writeImage', 'getCurrentPlaying', 'authOpenBrowser'];
             if (validChannels.includes(channel)) {
                 ipcRenderer.send(channel, data);
             }

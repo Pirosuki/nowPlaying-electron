@@ -20,6 +20,6 @@ getCurrentButton.addEventListener('click', function(event) {
 })
 
 var authOpenBrowserButton = document.getElementById("authOpenBrowserButton");
-getCurrentButton.addEventListener('click', function(event) {
+authOpenBrowserButton.addEventListener('click', function(event) {
     window.app.send('authOpenBrowser');
 })

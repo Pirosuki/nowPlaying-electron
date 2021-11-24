@@ -103,11 +103,10 @@ ipcMain.on('getCurrentPlaying', (event) => {
             let json = JSON.parse(body);
             if (json.is_playing === true) {
                 logMessage("Current track is \"" + json.item.name + "\"");
-                return
             }
-        }
-        else if (body.error.status !== '') {
-            console.log("Spotify returned" + body.error.status + ": " + body.error.message);
+            else if (body.includes('error')) {
+                logMessage("Spotify returned \"Error " + json.error.status + ": " + json.error.message + "\"");
+            };
             return
         }
 
