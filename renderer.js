@@ -18,3 +18,8 @@ var getCurrentButton = document.getElementById("getCurrentButton");
 getCurrentButton.addEventListener('click', function(event) {
     window.app.send('getCurrentPlaying');
 })
+
+var authOpenBrowserButton = document.getElementById("authOpenBrowserButton");
+getCurrentButton.addEventListener('click', function(event) {
+    window.app.send('authOpenBrowser');
+})

@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path')
 const fs = require('fs');
 const request = require('request')
+const open = require('open');
 
 const textFilePath = './output/text.txt';
 const imageFilePath = './output/image.png';
@@ -114,6 +115,10 @@ ipcMain.on('getCurrentPlaying', (event) => {
         fs.writeFileSync('./jsonTEMP.json', body);
     });
 });
+
+ipcMain.on('authOpenBrowser', (event) => {
+    open('https://google.com/')
+})
 
 // This script checks if the last message is identical to the incoming one to reduce spam.
 var lastMessage = '';
