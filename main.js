@@ -66,15 +66,6 @@ app.whenReady().then(() => {
     if (!fs.existsSync(configFilePath)) {
         fs.writeFileSync(configFilePath, configFileDefaults)
     }
-
-    // Checks if there is an already existing token
-    if (fs.existsSync("./cache/token")) {
-        token = fs.readFileSync("./cache/token")
-    }
-    else {
-        console.log("Could not find token")
-    }
-
 })
 
 // This piece closes the program when all windows get closed unless we're running on macos.
@@ -116,6 +107,7 @@ ipcMain.on('getCurrentPlaying', (event) => {
 });
 
 ipcMain.on('authOpenBrowser', (event) => {
+    // Put a gui check here so people can open in manually instead if they are using command line
     open('https://google.com/')
 })
 
