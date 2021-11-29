@@ -4,18 +4,24 @@ const fs = require('fs');
 const request = require('request')
 const open = require('open');
 
-const textFilePath = './output/text.txt';
-const imageFilePath = './output/image.png';
+const spotifyAuth = require('./spotifyAuth.js')
+
+const albumCoverFilePath = './output/albumCover.png';
+const songTitleFilePath = './output/songTitle.txt';
+const songArtistsFilePath = './output/songArtists.txt';
+const songCombinedFilePath = './output/songCombined.txt'
 const configFilePath = './config.json';
 
-var token;
+const config = require(configFilePath);
+
+var accessToken;
 
 const getCurrentPlayingOptions = {
     url: 'https://api.spotify.com/v1/me/player/currently-playing',
     method: 'GET',
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + accessToken
     }
 };
 
@@ -59,13 +65,19 @@ app.whenReady().then(() => {
         fs.mkdirSync('./output');
     }
     // Create placeholder files
-    fs.openSync(textFilePath, 'w');
-    fs.openSync(imageFilePath, 'w');
+    fs.openSync(albumCoverFilePath, 'w');
+    fs.openSync(songTitleFilePath, 'w');
+    fs.openSync(songArtistsFilePath, 'w');
+    fs.openSync(songCombinedFilePath, 'w');
 
     // Checks existance of json file
     if (!fs.existsSync(configFilePath)) {
         fs.writeFileSync(configFilePath, configFileDefaults)
     }
+
+    // Starts song checking loop
+    let loopFrequency = config.output.loopFrequency;
+    loopCheckPlaying(loopFrequency);
 })
 
 // This piece closes the program when all windows get closed unless we're running on macos.
@@ -74,42 +86,82 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 })
 
-ipcMain.on('writeText', (event, value) => {
-    fs.writeFileSync(textFilePath, value);
-
-    console.log("Attempted to write text \"" + value + "\"");
-});
-
-ipcMain.on('writeImage', (event, url) => {
-    request(url, {encoding: 'binary'}, function(err, res, body) {
-        fs.writeFileSync(imageFilePath, body, 'binary');
-    });
-
-    console.log("Attempted to write image \"" + url + "\"");
-});
-
-ipcMain.on('getCurrentPlaying', (event) => {
-    request(getCurrentPlayingOptions, function(err, res, body) {
-        if (body !== '') {
-            let json = JSON.parse(body);
-            if (json.is_playing === true) {
-                logMessage("Current track is \"" + json.item.name + "\"");
+function getCurrentPlaying() {
+    if (accessToken !== undefined) {
+        request(getCurrentPlayingOptions, function(err, res, body) {
+            if (body !== '') {
+                let json = JSON.parse(body);
+                if (json.is_playing === true) {
+                    outputSongInfo(json)
+                }
+                else if (body.includes('error')) {
+                    if (json.error.message === 'Invalid access token') {
+                        console.log("Access token invalid, attempting to renew.")
+                        triggerAuth(function() {
+                            console.log("Received new access token, retrying.")
+                            return;
+                        })
+                    }
+                    else {
+                        logMessage("Spotify returned \"Error " + json.error.status + ": " + json.error.message + "\"");
+                    }
+                };
+                return
             }
-            else if (body.includes('error')) {
-                logMessage("Spotify returned \"Error " + json.error.status + ": " + json.error.message + "\"");
-            };
-            return
-        }
+    
+            logMessage("Not currently playing");
+            fs.writeFileSync('./jsonTEMP.json', body);
+        });
+    }
+};
 
-        logMessage("Not currently playing");
-        fs.writeFileSync('./jsonTEMP.json', body);
+function triggerAuth(callback) {
+    spotifyAuth.getAccessToken(function(token) {
+        accessToken = token;
+        callback();
+    })
+}
+
+function outputSongInfo(data) {
+    // Album cover
+    let albumCoverSize = config.output.albumCoverSize;
+
+    albumCoverURL = data.album.images[albumCoverSize].url;
+
+    request(albumCoverURL, {encoding: 'binary'}, function(err, res, body) {
+        fs.writeFileSync(albumCoverFilePath, body, 'binary');
     });
-});
 
-ipcMain.on('authOpenBrowser', (event) => {
-    // Put a gui check here so people can open in manually instead if they are using command line
-    open('https://google.com/')
-})
+    // Title
+    let title = json.item.name;
+
+    fs.writeFileSync(songTitleFilePath, title);
+
+    // Artists
+    let separator = config.output.artistSeparator;
+
+    let artistList = [];
+    let artists;
+    for(var i in json.item.artists) {
+        artistList.push(json.item.artists[i].name);
+        artists = artistList.join(separator);
+    }
+
+    fs.writeFileSync(songArtistsFilePath, artists);
+
+    // Combined
+    let combinedFormatting = config.output.combinedFormatting;
+    let combined = eval(combinedFormatting);
+    
+    fs.writeFileSync(songCombinedFilePath, combined);
+
+    logMessage("Now playing: " + combined);
+}
+
+function loopCheckPlaying(loopFrequency) {
+    getCurrentPlaying(function() {
+    }, loopFrequency);
+}
 
 // This script checks if the last message is identical to the incoming one to reduce spam.
 var lastMessage = '';
