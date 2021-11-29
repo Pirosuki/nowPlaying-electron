@@ -15,6 +15,8 @@ const { Http2ServerRequest } = require('http2');
 // This is where the refresh token will be stored. This is a security risk, pls fix.
 const refreshTokenPath = './cache/refreshToken';
 
+var refreshToken;
+
 // Creates refreshToken file if it doesn't exist
 if (!fs.existsSync('./cache')){
     fs.mkdirSync('./cache');
@@ -23,23 +25,25 @@ if (!fs.existsSync('./cache')){
 else if (!fs.existsSync(refreshTokenPath)){
     fs.openSync(refreshTokenPath, 'w');
 }
+else if (fs.readFileSync(refreshTokenPath).length !== 0) {
+    refreshToken = fs.readFileSync(refreshTokenPath).toString();
+}
 
 var accessToken;
 
-// Reads refreshToken file value
-var refreshToken = fs.readFileSync(refreshTokenPath);
+var codeVerifier
 
 const client_id = '7602bd676b664028a229ad5f54583740';
 
 const redirect_uri = 'http://localhost:8085/';
 
-function getAuthCode() {
+function doSpotifyAuth(callback) {
     // Web callback server stuff
     const app = express();
     const port = process.env.PORT || 8085;
 
     // Creating codeChallenge for authentication
-    const codeVerifier = randomstring.generate(128);
+    codeVerifier = randomstring.generate(128);
 
     const base64Digest = crypto
         .createHash("sha256")
@@ -100,10 +104,13 @@ function getAuthCode() {
                 if (accessToken !== undefined) {
                     fs.writeFileSync(refreshTokenPath, refreshToken);
 
-                    return accessToken;
+                    console.log(refreshToken)
+
+                    callback();
                 }
                 else {
-                    console.log("error")
+                    console.log("Did not receive tokens. Spotify returned:");
+                    console.log(response.data);
                 }
             })
             .catch(function (error) {
@@ -127,7 +134,52 @@ function getAuthCode() {
     console.log(authURL);
 }
 
-getAuthCode(function() {
-})
+function refreshAccessToken(callback) {
+    let option = {
+        'client_id': client_id,
+        'grant_type': 'refresh_token',
+        'refresh_token': refreshToken,
+        'code_verifier': codeVerifier
+    }
 
-console.log("uwu")
+    // Attempts to trade authentication code for refresh token
+    axios({
+        method: 'post',
+        url: 'https://accounts.spotify.com/api/token',
+        params: option,
+        Headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+    .then(function (response) {
+        accessToken = response.data.access_token;
+        refreshToken = response.data.refresh_token;
+
+        if (accessToken !== undefined) {
+            fs.writeFileSync(refreshTokenPath, refreshToken);
+            callback();
+        }
+        else {
+            console.log("Did not receive tokens. Spotify returned:");
+            console.log(response.data);
+        }
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
+}
+
+function getAccessToken(callback) {
+    if (refreshToken !== undefined) {
+        console.log('triggering refreshAccessToken()');
+        refreshAccessToken(function() {
+            callback(accessToken);
+        });
+    }
+    else {
+        console.log('triggering doSpotifyAuth()');
+        doSpotifyAuth(function() {
+            callback(accessToken);
+        });
+    }
+}
