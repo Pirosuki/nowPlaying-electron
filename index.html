@@ -5,17 +5,37 @@
         <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
         <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
         <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-        <title>Hello World!</title>
+        <link rel="stylesheet" href="styles.css">
+        <title>nowPlaying.js</title>
     </head>
     <body>
-        <h1>Hello World!</h1>
-        We are using Node.js <span id="node-version"></span>,
-        Chromium <span id="chrome-version"></span>,
-        and Electron <span id="electron-version"></span>.
-        gaming HD
-        <object data="./output/songCombined.txt" width="300" height="200">
-            Not supported
-        </object>
+        <div class='sidenav'>
+            <a href='#'>
+                <svg width='60' height='60' class='navButtonBack'>
+                    <circle cx='30' cy='30' r='24' class='navButton'/>
+                </svg>
+            </a>
+            <a href='#'>
+                <svg width='60' height='60' class='navButtonBack'>
+                    <circle cx='30' cy='30' r='24' class='navButton'/>
+                </svg>
+            </a>
+            <a href='#'>
+                <svg width='60' height='60' class='navButtonBack'>
+                    <circle cx='30' cy='30' r='24' class='navButton'/>
+                </svg>
+            </a>
+        </div>
+        <div class='mainpage'>
+            We are using Node.js <span id="node-version"></span>,
+            Chromium <span id="chrome-version"></span>,
+            and Electron <span id="electron-version"></span>.
+            gaming HD
+            <span id="songTitle"></span>
+            <span id="songArtists"></span>
+            <image src="./albumCover.png" id="albumCover"></image>
+            <button id="refreshButton">refresh</button>
+        </div>
         <script src="./renderer.js"></script>
     </body>
 </html>

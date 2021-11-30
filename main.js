@@ -100,6 +100,7 @@ function getCurrentPlaying(callback) {
                 callback();
             })
             .catch(function (error) {
+                console.log(error);
                 if (error.response.statusText === 'Invalid access token') {
                     console.log("Access token invalid, attempting to renew.")
                     triggerAuth(function() {
@@ -164,8 +165,11 @@ function outputSongInfo(data, callback) {
     
     fs.writeFileSync(songCombinedFilePath, combined);
 
-    logMessage("Now playing: " + combined);
+    // Sends info for refreshing html song info display
+    let win = 
+    win.webContents.send('refreshSongInfo', title, artists);
 
+    logMessage("Now playing: " + combined);
     callback();
 }
 

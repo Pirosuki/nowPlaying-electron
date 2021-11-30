@@ -5,13 +5,13 @@ const {
 
 contextBridge.exposeInMainWorld('app', {
         send: (channel, data) => {
-            let validChannels = ['toMain', 'writeText', 'writeImage', 'getCurrentPlaying', 'authOpenBrowser'];
+            let validChannels = ['toMain'];
             if (validChannels.includes(channel)) {
                 ipcRenderer.send(channel, data);
             }
         },
-        receive: (channel, func) => {
-            let validChannels = ['fromMain'];
+        on: (channel, func) => {
+            let validChannels = ['fromMain', 'refreshSongInfo'];
             if (validChannels.includes(channel)) {
                 ipcRenderer.on(channel, (event, ...args) => func(...args));
             }
