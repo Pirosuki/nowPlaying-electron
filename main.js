@@ -1,10 +1,12 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path')
 const fs = require('fs');
-const request = require('request')
-const open = require('open');
+const axios = require('axios');
 
-const spotifyAuth = require('./spotifyAuth.js')
+const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
+
+const spotifyAuth = require('./spotifyAuth.js');
+const { json } = require('express');
 
 const albumCoverFilePath = './output/albumCover.png';
 const songTitleFilePath = './output/songTitle.txt';
@@ -16,14 +18,7 @@ const config = require(configFilePath);
 
 var accessToken;
 
-const getCurrentPlayingOptions = {
-    url: 'https://api.spotify.com/v1/me/player/currently-playing',
-    method: 'GET',
-    headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + accessToken
-    }
-};
+let loopFrequency = config.output.pollFrequency;
 
 const configFileDefaults = JSON.stringify({
     "app": {
@@ -74,10 +69,6 @@ app.whenReady().then(() => {
     if (!fs.existsSync(configFilePath)) {
         fs.writeFileSync(configFilePath, configFileDefaults)
     }
-
-    // Starts song checking loop
-    let loopFrequency = config.output.loopFrequency;
-    loopCheckPlaying(loopFrequency);
 })
 
 // This piece closes the program when all windows get closed unless we're running on macos.
@@ -86,31 +77,46 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 })
 
-function getCurrentPlaying() {
+function getCurrentPlaying(callback) {
     if (accessToken !== undefined) {
-        request(getCurrentPlayingOptions, function(err, res, body) {
-            if (body !== '') {
-                let json = JSON.parse(body);
-                if (json.is_playing === true) {
-                    outputSongInfo(json)
+        axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
+                headers: {
+                    'Content-type': 'gaming',
+                    Authorization: 'Bearer ' + accessToken
                 }
-                else if (body.includes('error')) {
-                    if (json.error.message === 'Invalid access token') {
-                        console.log("Access token invalid, attempting to renew.")
-                        triggerAuth(function() {
-                            console.log("Received new access token, retrying.")
-                            return;
+            })
+            .then(function (response) {
+                body = response.data;
+                if (body !== '') {
+                    if (body.is_playing === true) {
+                        outputSongInfo(body, function() {
+                            callback();
                         })
                     }
-                    else {
-                        logMessage("Spotify returned \"Error " + json.error.status + ": " + json.error.message + "\"");
-                    }
-                };
-                return
-            }
-    
-            logMessage("Not currently playing");
-            fs.writeFileSync('./jsonTEMP.json', body);
+                    return
+                }
+        
+                logMessage("Not currently playing");
+                callback();
+            })
+            .catch(function (error) {
+                if (error.response.statusText === 'Invalid access token') {
+                    console.log("Access token invalid, attempting to renew.")
+                    triggerAuth(function() {
+                        console.log("Received new access token, retrying.")
+                        callback();
+                    })
+                }
+                else {
+                    console.log("Spotify returned \"Error " + error.response.status + ": " + error.response.statusText + "\"");
+                }
+            });
+    }
+    else {
+        console.log("No current accessToken, requesting new one.");
+        triggerAuth(function() {
+            console.log("Received new access token, retrying.");
+            callback();
         });
     }
 };
@@ -122,18 +128,21 @@ function triggerAuth(callback) {
     })
 }
 
-function outputSongInfo(data) {
+function outputSongInfo(data, callback) {
     // Album cover
     let albumCoverSize = config.output.albumCoverSize;
 
-    albumCoverURL = data.album.images[albumCoverSize].url;
+    albumCoverURL = data.item.album.images[albumCoverSize].url;
 
-    request(albumCoverURL, {encoding: 'binary'}, function(err, res, body) {
-        fs.writeFileSync(albumCoverFilePath, body, 'binary');
-    });
+    axios.get(albumCoverURL, {
+        responseType: 'stream'
+    })
+    .then(response => {
+        response.data.pipe(fs.createWriteStream(albumCoverFilePath));
+    })
 
     // Title
-    let title = json.item.name;
+    let title = data.item.name;
 
     fs.writeFileSync(songTitleFilePath, title);
 
@@ -142,8 +151,8 @@ function outputSongInfo(data) {
 
     let artistList = [];
     let artists;
-    for(var i in json.item.artists) {
-        artistList.push(json.item.artists[i].name);
+    for(var i in data.item.artists) {
+        artistList.push(data.item.artists[i].name);
         artists = artistList.join(separator);
     }
 
@@ -156,12 +165,20 @@ function outputSongInfo(data) {
     fs.writeFileSync(songCombinedFilePath, combined);
 
     logMessage("Now playing: " + combined);
+
+    callback();
 }
 
-function loopCheckPlaying(loopFrequency) {
+// Song checking loop
+function loopSongCheck() {
     getCurrentPlaying(function() {
-    }, loopFrequency);
+        sleep(loopFrequency).then(() => {
+            loopSongCheck();
+        })
+    });
 }
+// Starts song checking loop
+loopSongCheck();
 
 // This script checks if the last message is identical to the incoming one to reduce spam.
 var lastMessage = '';
