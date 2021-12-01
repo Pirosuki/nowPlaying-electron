@@ -3,9 +3,9 @@ const {
     ipcRenderer
 } = require('electron')
 
-contextBridge.exposeInMainWorld('app', {
+contextBridge.exposeInMainWorld('api', {
         send: (channel, data) => {
-            let validChannels = ['toMain'];
+            let validChannels = ['toMain', 'popOut'];
             if (validChannels.includes(channel)) {
                 ipcRenderer.send(channel, data);
             }

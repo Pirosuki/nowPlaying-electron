@@ -45,10 +45,42 @@ const createWindow = () => {
     win.webContents.openDevTools()
 
     win.loadFile('index.html');
+
+    return win;
+}
+
+let popOutWinId;
+const createPopOut = () => {
+    const popOutWin = new BrowserWindow({
+        width: 500,
+        height: 100,
+        frame: false,
+        maximizable: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        }
+    });
+    popOutWin.setMenuBarVisibility(false);
+
+    popOutWin.setAspectRatio(5/1);
+    
+    popOutWin.webContents.openDevTools();
+
+    popOutWin.loadFile('popOut.html');
+
+    popOutWinId = popOutWin.id;
+
+    popOutWin.on('close', function() {
+        popOutWinId = undefined;
+    })
 }
 
 app.whenReady().then(() => {
-    createWindow();
+    win = createWindow();
+
+    win.on('close', function() {
+        app.quit();
+    })
 
     // Open new window if none are currently present.
     app.on('activate', () => {
@@ -69,6 +101,9 @@ app.whenReady().then(() => {
     if (!fs.existsSync(configFilePath)) {
         fs.writeFileSync(configFilePath, configFileDefaults)
     }
+
+    // Starts song checking loop
+    loopSongCheck();
 })
 
 // This piece closes the program when all windows get closed unless we're running on macos.
@@ -166,12 +201,24 @@ function outputSongInfo(data, callback) {
     fs.writeFileSync(songCombinedFilePath, combined);
 
     // Sends info for refreshing html song info display
-    let win = 
-    win.webContents.send('refreshSongInfo', title, artists);
+    if (popOutWinId !== undefined) {
+        let popOutWin = BrowserWindow.fromId(popOutWinId);
+        popOutWin.webContents.send('refreshSongInfo', title, artists, albumCoverFilePath);
+    }
 
     logMessage("Now playing: " + combined);
     callback();
 }
+
+ipcMain.on('popOut', function(event) {
+    if (popOutWinId === undefined) {
+        createPopOut();
+    }
+    else {
+        // close current window before opening new one
+        console.log("placeholder 220");
+    }
+});
 
 // Song checking loop
 function loopSongCheck() {
@@ -181,8 +228,6 @@ function loopSongCheck() {
         })
     });
 }
-// Starts song checking loop
-loopSongCheck();
 
 // This script checks if the last message is identical to the incoming one to reduce spam.
 var lastMessage = '';
