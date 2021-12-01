@@ -220,6 +220,22 @@ ipcMain.on('popOut', function(event) {
     }
 });
 
+ipcMain.on('triggerRefreshPopOutList', function(event) {
+    console.log("main received")
+    refreshPopOutList();
+})
+
+function refreshPopOutList() {
+    console.log("trigger 1")
+
+    let win = BrowserWindow.fromId(1);
+
+    let dir = './themes/popOut';
+    let list =  fs.readdirSync(dir);
+
+    win.webContents.send('refreshPopOutList', list);
+}
+
 // Song checking loop
 function loopSongCheck() {
     getCurrentPlaying(function() {

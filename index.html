@@ -27,11 +27,19 @@
             </a>
         </div>
         <div class='mainpage'>
-            We are using Node.js <span id="node-version"></span>,
-            Chromium <span id="chrome-version"></span>,
-            and Electron <span id="electron-version"></span>.
-            gaming HD
-            <button id="popOut">popout</button>
+            <div class='underpage' id='home'>
+                <button id="refreshThemes">refresh</button>
+                <select id="popOutList">
+                    <option>Pick popOut theme</option>
+                </select>
+                <button id="popOut">popout</button>
+            </div>
+            <div class='underpage hiddenpage' id='about'>
+                We are using Node.js <span id="node-version"></span>,
+                Chromium <span id="chrome-version"></span>,
+                and Electron <span id="electron-version"></span>.
+                gaming HD
+            </div>
         </div>
         <script src="./renderer.js"></script>
     </body>
