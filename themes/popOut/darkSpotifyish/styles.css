@@ -21,6 +21,7 @@ body {
     margin-left: calc(100vw / 5);
     position: fixed;
     display: inline-flex;
+    white-space: nowrap;
     font-family: Montserrat;
 }
 

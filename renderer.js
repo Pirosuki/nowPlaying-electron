@@ -1,8 +1,3 @@
-let popOutButton = document.getElementById('popOut');
-popOutButton.onclick = function() {
-    api.send('popOut');
-}
-
 let refreshThemesButton = document.getElementById('refreshThemes');
 refreshThemesButton.onclick = function() {
     api.send('triggerRefreshPopOutList');
@@ -24,3 +19,8 @@ api.on('refreshPopOutList', function(list, event) {
     }
 });
 
+let popOutButton = document.getElementById('popOut');
+popOutButton.onclick = function() {
+    let popOutTheme = popOutList.options[popOutList.selectedIndex].text;
+    api.send('popOut', popOutTheme);
+}

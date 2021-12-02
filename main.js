@@ -20,6 +20,8 @@ var accessToken;
 
 let loopFrequency = config.output.pollFrequency;
 
+let lastPlayed = 'nothingCurrentlyPlaying';
+
 const configFileDefaults = JSON.stringify({
     "app": {
         "theme": "dark",
@@ -50,7 +52,7 @@ const createWindow = () => {
 }
 
 let popOutWinId;
-const createPopOut = () => {
+const createPopOut = (popOutThemePath) => {
     const popOutWin = new BrowserWindow({
         width: 500,
         height: 100,
@@ -66,7 +68,7 @@ const createPopOut = () => {
     
     popOutWin.webContents.openDevTools();
 
-    popOutWin.loadFile('popOut.html');
+    popOutWin.loadFile(popOutThemePath);
 
     popOutWinId = popOutWin.id;
 
@@ -104,6 +106,8 @@ app.whenReady().then(() => {
 
     // Starts song checking loop
     loopSongCheck();
+
+    console.log("nowPlaying.js loaded and ready!");
 })
 
 // This piece closes the program when all windows get closed unless we're running on macos.
@@ -122,30 +126,33 @@ function getCurrentPlaying(callback) {
             })
             .then(function (response) {
                 body = response.data;
-                if (body !== '') {
-                    if (body.is_playing === true) {
-                        outputSongInfo(body, function() {
-                            callback();
-                        })
-                    }
-                    return
-                }
-        
-                logMessage("Not currently playing");
-                callback();
-            })
-            .catch(function (error) {
-                console.log(error);
-                if (error.response.statusText === 'Invalid access token') {
-                    console.log("Access token invalid, attempting to renew.")
-                    triggerAuth(function() {
-                        console.log("Received new access token, retrying.")
+                if (body !== '' && body.is_playing === true) {
+                    outputSongInfo(body, function() {
                         callback();
                     })
                 }
                 else {
-                    console.log("Spotify returned \"Error " + error.response.status + ": " + error.response.statusText + "\"");
+                    // Code goes here if nothing is currently playing
+                    if ('nothingCurrentlyPlaying' !== lastPlayed) {
+                        if (popOutWinId !== undefined) {
+                            // Not playing values
+                            let title = 'Nothing currently'
+                            let artists = 'Playing'
+                            let coverPath = './albumCoverNotPlaying.jpeg'
+
+                            let popOutWin = BrowserWindow.fromId(popOutWinId);
+                            popOutWin.webContents.send('refreshPopOutSongInfo', true, title, artists, coverPath);    
+                        }
+                
+                        console.log("Nothing currently playing...");
+                        lastPlayed = 'nothingCurrentlyPlaying';
+                    }
+                    
+                    callback();
                 }
+            })
+            .catch(function (error) {
+                console.log(error);
             });
     }
     else {
@@ -165,69 +172,69 @@ function triggerAuth(callback) {
 }
 
 function outputSongInfo(data, callback) {
-    // Album cover
-    let albumCoverSize = config.output.albumCoverSize;
-
-    albumCoverURL = data.item.album.images[albumCoverSize].url;
-
-    axios.get(albumCoverURL, {
-        responseType: 'stream'
-    })
-    .then(response => {
-        response.data.pipe(fs.createWriteStream(albumCoverFilePath));
-    })
-
     // Title
     let title = data.item.name;
 
-    fs.writeFileSync(songTitleFilePath, title);
-
     // Artists
-    let separator = config.output.artistSeparator;
-
+    let artistSeparator = config.output.artistSeparator;
     let artistList = [];
     let artists;
     for(var i in data.item.artists) {
         artistList.push(data.item.artists[i].name);
-        artists = artistList.join(separator);
+        artists = artistList.join(artistSeparator);
     }
-
-    fs.writeFileSync(songArtistsFilePath, artists);
 
     // Combined
     let combinedFormatting = config.output.combinedFormatting;
     let combined = eval(combinedFormatting);
-    
-    fs.writeFileSync(songCombinedFilePath, combined);
 
-    // Sends info for refreshing html song info display
-    if (popOutWinId !== undefined) {
-        let popOutWin = BrowserWindow.fromId(popOutWinId);
-        popOutWin.webContents.send('refreshSongInfo', title, artists, albumCoverFilePath);
-    }
+    // Album cover
+    let albumCoverSize = config.output.albumCoverSize;
+    albumCoverURL = data.item.album.images[albumCoverSize].url;
 
-    logMessage("Now playing: " + combined);
-    callback();
-}
+    // Check to see if we're wasting our time writing info that's already there
+    if (title + artists !== lastPlayed) {
+        // This part is a function because we need the callback to know when the image has been written.
+        writeImage(albumCoverURL, albumCoverFilePath, function() {
+            // Writing all the output files
+            fs.writeFileSync(songTitleFilePath, title);    
+            fs.writeFileSync(songArtistsFilePath, artists);
+            fs.writeFileSync(songCombinedFilePath, combined);
 
-ipcMain.on('popOut', function(event) {
-    if (popOutWinId === undefined) {
-        createPopOut();
+            // Sends info to popOut display
+            if (popOutWinId !== undefined) {
+                let popOutWin = BrowserWindow.fromId(popOutWinId);
+                popOutWin.webContents.send('refreshPopOutSongInfo', true, title, artists, '../../.' + albumCoverFilePath);    
+            }
+
+            console.log("Now playing: " + combined);
+            lastPlayed = title + artists;
+
+            callback();
+        })
     }
     else {
-        // close current window before opening new one
-        console.log("placeholder 220");
+        callback();
     }
+}
+
+ipcMain.on('popOut', function(event, popOutTheme) {
+    if (popOutWinId !== undefined) {
+        let popOutWin = BrowserWindow.fromId(popOutWinId);
+        popOutWin.close();
+    }
+
+    let popOutThemePath = './themes/popOut/' + popOutTheme + '/index.html';
+
+    // Create new popout
+    createPopOut(popOutThemePath);
 });
 
 ipcMain.on('triggerRefreshPopOutList', function(event) {
-    console.log("main received")
     refreshPopOutList();
 })
 
 function refreshPopOutList() {
-    console.log("trigger 1")
-
     let win = BrowserWindow.fromId(1);
 
     let dir = './themes/popOut';
@@ -236,6 +243,18 @@ function refreshPopOutList() {
     win.webContents.send('refreshPopOutList', list);
 }
 
+function writeImage(url, path, callback) {
+    axios.get(url, {
+        responseType: 'stream'
+    })
+    .then(response => {
+        response.data.pipe(fs.createWriteStream(path));
+    })
+    .finally(() => {
+        callback();
+    });
+};
+
 // Song checking loop
 function loopSongCheck() {
     getCurrentPlaying(function() {
@@ -243,13 +262,4 @@ function loopSongCheck() {
             loopSongCheck();
         })
     });
-}
-
-// This script checks if the last message is identical to the incoming one to reduce spam.
-var lastMessage = '';
-function logMessage(message) {
-    if (message !== lastMessage) {
-        console.log(message);
-    }
-    lastMessage = message;
 }

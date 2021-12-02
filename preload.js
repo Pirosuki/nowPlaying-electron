@@ -14,7 +14,7 @@ contextBridge.exposeInMainWorld('api', {
             }
         },
         on: (channel, func) => {
-            let validChannels = ['fromMain', 'refreshSongInfo', 'refreshPopOutList'];
+            let validChannels = ['fromMain', 'refreshSongInfo', 'refreshPopOutList', 'refreshPopOutSongInfo'];
             if (validChannels.includes(channel)) {
                 ipcRenderer.on(channel, (event, ...args) => func(...args));
             }
