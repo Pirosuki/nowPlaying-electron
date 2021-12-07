@@ -2,11 +2,9 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path')
 const fs = require('fs');
 const axios = require('axios');
-
-const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
+const contextMenu = require('electron-context-menu');
 
 const spotifyAuth = require('./spotifyAuth.js');
-const { json } = require('express');
 
 const albumCoverFilePath = './output/albumCover.png';
 const songTitleFilePath = './output/songTitle.txt';
@@ -15,6 +13,8 @@ const songCombinedFilePath = './output/songCombined.txt'
 const configFilePath = './config.json';
 
 const config = require(configFilePath);
+
+const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
 
 var accessToken;
 
@@ -33,6 +33,10 @@ const configFileDefaults = JSON.stringify({
     }
 }, null, 2)
 
+contextMenu({
+	showInspectElement: true,
+});
+
 const createWindow = () => {
     const win = new BrowserWindow({
         width: 800,
@@ -43,8 +47,6 @@ const createWindow = () => {
     });
 
     win.setMenuBarVisibility(false)
-
-    win.webContents.openDevTools()
 
     win.loadFile('index.html');
 
@@ -57,6 +59,7 @@ const createPopOut = (popOutThemePath) => {
         width: 500,
         height: 100,
         frame: false,
+        transparent: true,
         maximizable: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
@@ -66,12 +69,9 @@ const createPopOut = (popOutThemePath) => {
 
     popOutWin.setAspectRatio(5/1);
     
-    popOutWin.webContents.openDevTools();
-
     popOutWin.loadFile(popOutThemePath);
 
     popOutWinId = popOutWin.id;
-
     popOutWin.on('close', function() {
         popOutWinId = undefined;
     })
@@ -251,7 +251,10 @@ function writeImage(url, path, callback) {
         response.data.pipe(fs.createWriteStream(path));
     })
     .finally(() => {
-        callback();
+        // FIX // Apparently it's pretty random whether the file is done writing or not, this is just to make sure.
+        sleep(250).then(() => {
+            callback();
+        })
     });
 };
 
@@ -263,3 +266,7 @@ function loopSongCheck() {
         })
     });
 }
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit()
+});

@@ -28,11 +28,15 @@
         </div>
         <div class='mainpage'>
             <div class='underpage' id='home'>
-                <button id="refreshThemes">refresh</button>
-                <select id="popOutList">
-                    <option>Pick popOut theme</option>
-                </select>
-                <button id="popOut">popout</button>
+                <div class='cube' id='leftCube'></div>
+                <div class='cube' id='topRightCube'>
+                    <select class="inCube" id="popOutList">
+                        <option>Pick popOut theme</option>
+                    </select>
+                    <button class="inCube" id="refreshThemes">refresh</button>
+                    <button class="inCube" id="popOut">popout</button>
+                </div>
+                <div class='cube' id='botRightCube'></div>
             </div>
             <div class='underpage hiddenpage' id='about'>
                 We are using Node.js <span id="node-version"></span>,

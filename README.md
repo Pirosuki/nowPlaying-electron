@@ -6,3 +6,4 @@ This is a script that grabs your current playing track from spotify and puts it'
 - Option to run without user interface
 - Option to hide application under icon on top for macos or arrow for windows
 - Fix vulnerabilities `npm audit`
+- Scrolling text

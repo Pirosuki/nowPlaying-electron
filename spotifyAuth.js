@@ -131,8 +131,8 @@ module.exports = {
         // Starts web server
         var server = app.listen(port);
     
-        // Prints* auth url
-        console.log(authURL);
+        // Opens auth url
+        open(authURL);
     },
 
     refreshAccessToken: function(callback) {
