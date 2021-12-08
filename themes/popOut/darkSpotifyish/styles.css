@@ -1,3 +1,8 @@
+:root {
+    --titleWidth: 50px;
+    --artistsWidth: 50px;
+}
+
 body {
     margin: 0;
 }
@@ -15,26 +20,42 @@ body {
     width: auto;
 }
 
-#songTitle, #songArtists {
-    height: calc((100vw / 5) / 2);
-    width: calc((100vw / 5) * 4);
-    margin-left: calc(100vw / 5);
-    position: fixed;
-    display: inline-flex;
+#textBoundaries {
+    position: absolute;
+    left: 20vw;
+    width: 80vw;
+    height: 20vw;
+    overflow: hidden;
     white-space: nowrap;
-    font-family: Montserrat;
 }
 
-#songTitle {
+.songTitle, .songArtists {
+    position: absolute;
+    display: inline-flex;
+    font-family: Montserrat;
+    height: 10vw;
+}
+
+.songTitle {
     align-items: flex-end;
     color: white;
     font-size: 6vw;
 }
 
-#songArtists {
-    margin-top: calc((100vw / 5) / 2);
+.songArtists {
+    margin-top: 10vw;
     color: #b3b3b3;
     font-size: 4.7vw;
+}
+
+@keyframes periodicScrollTitle {
+    0% {transform: translate3d(0, 0, 0);}
+    20%, 100% {transform: translate3d(500px, 0, 0);}
+}
+
+@keyframes periodicScrollArtists {
+    0% {transform: translate3d(0, 0, 0);}
+    20%, 100% {transform: translate3d(500px, 0, 0);}
 }
 
 * {

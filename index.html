@@ -10,39 +10,64 @@
     </head>
     <body>
         <div class='sidenav'>
-            <a href='#'>
-                <svg width='60' height='60' class='navButtonBack'>
-                    <circle cx='30' cy='30' r='24' class='navButton'/>
-                </svg>
-            </a>
-            <a href='#'>
-                <svg width='60' height='60' class='navButtonBack'>
-                    <circle cx='30' cy='30' r='24' class='navButton'/>
-                </svg>
-            </a>
-            <a href='#'>
-                <svg width='60' height='60' class='navButtonBack'>
-                    <circle cx='30' cy='30' r='24' class='navButton'/>
-                </svg>
-            </a>
+            <svg width='60' height='60' class='navButtonBack' id='navButtonHome'>
+                <circle cx='30' cy='30' r='24' class='navButtonIcon'/>
+            </svg>
+            <svg width='60' height='60' class='navButtonBack' id='navButtonOptions'>
+                <circle cx='30' cy='30' r='24' class='navButtonIcon'/>
+            </svg>
+            <svg width='60' height='60' class='navButtonBack' id='navButtonAbout'>
+                <circle cx='30' cy='30' r='24' class='navButtonIcon'/>
+            </svg>
         </div>
         <div class='mainpage'>
             <div class='underpage' id='home'>
                 <div class='cube' id='leftCube'></div>
                 <div class='cube' id='topRightCube'>
-                    <select class="inCube" id="popOutList">
+                    <select class="cubeContent" id="popOutList">
                         <option>Pick popOut theme</option>
                     </select>
-                    <button class="inCube" id="refreshThemes">refresh</button>
-                    <button class="inCube" id="popOut">popout</button>
+                    <button class="cubeContent" id="refreshThemes">refresh</button>
+                    <button class="cubeContent" id="popOut">popout</button>
                 </div>
                 <div class='cube' id='botRightCube'></div>
             </div>
+            <div class='underpage hiddenpage' id='options'>
+                <div class='cube' id='leftCube'>
+                    <span class='cubeContent optionCategory'>Script Settings</span><br><br>
+                    
+                    <span class='cubeContent optionSubcategory'>Output Formatting</span><br>
+                    <span class='cubeContent optionTitle'>Artist separator</span><br>
+                    <input class='cubeContent optionInput' id='optionArtistSeparatorInput'>
+                    <span class='cubeContent optionPreview' id='optionArtistSeparatorPreview'></span><br><br>
+                    <span class='cubeContent optionTitle'>Combined formatting</span><br>
+                    <input class='cubeContent optionInput' id='optionCombinedFormattingInput'>
+                    <span class='cubeContent optionPreview' id='optionCombinedFormattingPreview'></span><br><br>
+
+                    <span class='cubeContent optionTitle'>Poll frequency</span><br>
+                    <input class='cubeContent optionInput'>
+                    <button class='cubeContent' id='saveOptionsButton'>Save</button>
+                </div>
+                <div class='cube' id='rightCube'>
+                    <span class='cubeContent optionCategory'>App Settings</span><br><br>
+                    <span class='cubeContent optionTitle'>App theme</span><br>
+                    <select class='cubeContent' id='appThemeOption'>
+                        <option>Auto</option>
+                        <option>Light</option>
+                        <option>Dark</option>
+                    </select>
+                    <button class='cubeContent' id='saveOptionsButton'>Save</button>
+                </div>
+            </div>
             <div class='underpage hiddenpage' id='about'>
-                We are using Node.js <span id="node-version"></span>,
-                Chromium <span id="chrome-version"></span>,
-                and Electron <span id="electron-version"></span>.
-                gaming HD
+                <div class='cube' id='leftCube'>
+                    <span class='cubeContent'>
+                        We are using Node.js <span id="node-version">x</span>,
+                        Chromium <span id="chrome-version">y</span>,
+                        and Electron <span id="electron-version">z</span>.
+                    </span>
+                </div>
+                <div class='cube' id='rightCube'></div>
             </div>
         </div>
         <script src="./renderer.js"></script>
