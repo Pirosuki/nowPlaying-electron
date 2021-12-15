@@ -8,23 +8,23 @@ body {
 }
 
 .mainPage {
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: #131313;
     width: 100vw;
-    height: 20vw;
+    height: calc(100vw / 6);
     position: fixed;
 }
 
 #albumCover {
-    margin: calc((100vw / 5) / 25);
-    height: 92%;
+    height: 100%;
     width: auto;
 }
 
 #textBoundaries {
     position: absolute;
-    left: 20vw;
-    width: 80vw;
-    height: 20vw;
+    margin-left: 3vw;
+    left: calc(100vw / 6);
+    width: calc(100vw / 6 * 5);
+    height: calc(100vw / 6);
     overflow: hidden;
     white-space: nowrap;
 }
@@ -33,7 +33,7 @@ body {
     position: absolute;
     display: inline-flex;
     font-family: Montserrat;
-    height: 10vw;
+    height: calc(100vw / 12);
 }
 
 .songTitle {
@@ -43,7 +43,7 @@ body {
 }
 
 .songArtists {
-    margin-top: 10vw;
+    margin-top: calc(100vw / 12);
     color: #b3b3b3;
     font-size: 4.7vw;
 }
