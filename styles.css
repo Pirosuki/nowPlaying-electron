@@ -1,0 +1,175 @@
+/* https://uxplanet.org/8-tips-for-dark-theme-design-8dfc2f8f7ab6 */
+
+.sidenav {
+    position: fixed;
+    height: 100vh;
+    width: 60px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.mainpage {
+    height: 100vh;
+    margin-left: 60px;
+}
+
+body {
+    margin: 0;
+    font: caption; /* Use system font */
+}
+
+.navButtonIcon {
+    fill: white;
+}
+
+.underpage {
+    position: absolute;
+}
+
+.hiddenpage {
+    display: none;
+}
+
+.cubeContent {
+    margin: 10px;
+}
+
+#refreshThemes, #popOut, #popOutList {
+    border: none;
+}
+
+#refreshThemes, #popOut {
+    font: caption;
+    width: calc(100% - 20px);
+}
+
+#popOutList {
+    font: caption;
+    width: calc(100% - 20px);
+    height: 28px;
+}
+
+#refreshThemes {
+    height: calc(100% / 4 - 29px);
+}
+
+#popOut {
+    height: calc(100% / 4 * 3 - 59px);
+}
+
+#refreshThemes:active, #popOut:active {
+    background-color: #8d8d8d;
+}
+
+.infoText {
+    margin: 10px;
+    display: inline-block;
+}
+
+.cube {
+    position: absolute;
+    width: calc(50vw - 45px);
+    margin: 10px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+#fullCube {
+    height: calc(100vh - 20px);
+    width: calc(100vw - 60px - 20px);
+}
+
+#leftCube {
+    height: calc(100vh - 20px);
+}
+
+#rightCube {
+    height: calc(100vh - 20px);
+    left: calc(50vw - 35px);
+}
+
+#topRightCube, #botRightCube {
+    position: absolute;
+    left: calc(50vw - 35px);
+    height: calc(50vh - 15px);
+}
+
+#botRightCube {
+    top: calc(50vh - 5px);
+}
+
+.optionInput {
+    border: none;
+    width: calc(100% / 3 - 10px);
+}
+
+.optionCategory {
+    font-size: 20px;
+}
+
+.optionSubcategory {
+    font-size: 16px;
+}
+
+.optionPreview {
+    white-space: pre;
+    background-color:rgba(255, 255, 255, 0.05);
+    padding: 3px;
+}
+
+#saveOptionsButton {
+    width: 50px;
+    height: 20px;
+    border: none;
+    position: absolute;
+    left: calc(100% - 70px);
+    top: calc(100% - 40px);
+}
+
+@media (prefers-color-scheme: light) {
+    .sidenav {
+        background-color: #20dc19;
+    }
+
+    .navButtonBack:hover {
+        background-color: #23ff1c;
+    }
+    
+    .navButtonBack:active {
+        background-color: #19b613;
+    }
+}
+  
+@media (prefers-color-scheme: dark) {
+    .sidenav {
+        background-color: #1e1e1e;
+    }
+
+    .cube {
+        background-color: #1e1e1e;
+    }
+
+    body {
+        background-color: #121212;
+        color: rgba(255, 255, 255, 0.87);
+    }
+
+    .navButtonIcon {
+        opacity: 60%;
+    }
+
+    .navButtonBack:hover {
+        background-color: #2e2e2e;
+    }
+    
+    .navButtonBack:active {
+        background-color: #111111;
+    }
+
+    #refreshThemes, #popOut, #popOutList {
+        background-color: #323232;
+        color: white;
+    }
+
+    #refreshThemes:active, #popOut:active {
+        background-color: #111111;
+    }
+}
