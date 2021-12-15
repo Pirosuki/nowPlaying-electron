@@ -25,11 +25,11 @@ aboutPageButton.onclick = function() {
 
 let refreshThemesButton = document.getElementById('refreshThemes');
 refreshThemesButton.onclick = function() {
-    //api.send('triggerRefreshPopOutList');
+    api.send('triggerRefreshPopOutList');
 }
 
 let popOutList = document.getElementById('popOutList');
-/*api.on('refreshPopOutList', function(list, event) {
+api.on('refreshPopOutList', function(list, event) {
     // Remove old values
     while (popOutList.hasChildNodes()) {
         popOutList.removeChild(popOutList.firstChild);
@@ -42,12 +42,12 @@ let popOutList = document.getElementById('popOutList');
         elem.textContent = theme;
         popOutList.appendChild(elem);
     }
-});*/
+});
 
 let popOutButton = document.getElementById('popOut');
 popOutButton.onclick = function() {
     let popOutTheme = popOutList.options[popOutList.selectedIndex].text;
-    //api.send('popOut', popOutTheme);
+    api.send('popOut', popOutTheme);
 };
 
 let saveOptionsButton = document.getElementById('saveOptionsButton');

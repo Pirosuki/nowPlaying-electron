@@ -1,6 +1,6 @@
 :root {
-    --titleWidth: 50px;
-    --artistsWidth: 50px;
+    --titleWidth: none;
+    --artistsWidth: none;
 }
 
 body {
@@ -50,12 +50,12 @@ body {
 
 @keyframes periodicScrollTitle {
     0% {transform: translate3d(0, 0, 0);}
-    20%, 100% {transform: translate3d(500px, 0, 0);}
+    20%, 100% {transform: translate3d(var(--titleWidth), 0, 0);}
 }
 
 @keyframes periodicScrollArtists {
     0% {transform: translate3d(0, 0, 0);}
-    20%, 100% {transform: translate3d(500px, 0, 0);}
+    20%, 100% {transform: translate3d(var(--artistsWidth), 0, 0);}
 }
 
 * {
