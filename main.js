@@ -54,7 +54,7 @@ const createWindow = () => {
 }
 
 let popOutWinId;
-const createPopOut = (popOutThemePath) => {
+const createPopOut = (popOutThemePath, aspectRatio) => {
     const popOutWin = new BrowserWindow({
         width: 500,
         height: 100,
@@ -67,7 +67,7 @@ const createPopOut = (popOutThemePath) => {
     });
     popOutWin.setMenuBarVisibility(false);
 
-    popOutWin.setAspectRatio(5/1);
+    popOutWin.setAspectRatio(aspectRatio);
     
     popOutWin.loadFile(popOutThemePath);
 
@@ -225,9 +225,15 @@ ipcMain.on('popOut', function(event, popOutTheme) {
     }
 
     let popOutThemePath = './themes/popOut/' + popOutTheme + '/index.html';
+    let popOutConfigPath = './themes/popOut/' + popOutTheme + '/config.json';
+
+    const popOutConfig = require(popOutConfigPath);
+    let aspectRatio = parseInt(popOutConfig.aspectRatio);
+
+    console.log(aspectRatio);
 
     // Create new popout
-    createPopOut(popOutThemePath);
+    createPopOut(popOutThemePath, aspectRatio);
 });
 
 ipcMain.on('triggerRefreshPopOutList', function(event) {
