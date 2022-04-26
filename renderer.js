@@ -9,6 +9,20 @@ homePageButton.onclick = function() {
     homePage.style.display = 'block';
 }
 
+var options = document.getElementsByClassName('optionInput');
+let origOptions;
+Array.from(options).forEach(option =>{
+
+    option.addEventListener('input', function() {
+        console.log(option.id, " aaa");
+    });
+});
+
+let saveOptionsButton = document.getElementById('saveOptionsButton');
+saveOptionsButton.onclick = function() {
+    api.send('saveOptions');
+}
+
 let optionsPageButton = document.getElementById('navButtonOptions');
 optionsPageButton.onclick = function() {
     homePage.style.display = 'none';
@@ -48,11 +62,6 @@ let popOutButton = document.getElementById('popOut');
 popOutButton.onclick = function() {
     let popOutTheme = popOutList.options[popOutList.selectedIndex].text;
     api.send('popOut', popOutTheme);
-};
-
-let saveOptionsButton = document.getElementById('saveOptionsButton');
-saveOptionsButton.onclick = function() {
-    // save stuff
 };
 
 let optionArtistSeparatorPreview = document.getElementById('optionArtistSeparatorPreview');

@@ -44,11 +44,10 @@
                     <input class='cubeContent optionInput' id='optionCombinedFormattingInput'>
                     <span class='cubeContent optionPreview' id='optionCombinedFormattingPreview'></span><br><br>
 
-                    <span class='cubeContent optionTitle'>Poll frequency</span><br>
+                    <span class='cubeContent optionTitle' id='optionPollFrequency'>Poll frequency</span><br>
                     <input class='cubeContent optionInput'>
-                    <button class='cubeContent' id='saveOptionsButton'>Save</button>
                 </div>
-                <div class='cube' id='rightCube'>
+                <div class='cube' id='topRightCube'>
                     <span class='cubeContent optionCategory'>App Settings</span><br><br>
                     <span class='cubeContent optionTitle'>App theme</span><br>
                     <select class='cubeContent' id='appThemeOption'>
@@ -56,7 +55,15 @@
                         <option>Light</option>
                         <option>Dark</option>
                     </select>
+                </div>
+                <div class='cube' id='botRightCube'>
+                    <span class='cubeContent optionCategory'>Sources</span><br><br>
                     <button class='cubeContent' id='saveOptionsButton'>Save</button>
+                    <div id='sourceList'>
+                        <div class="sourceListItem">1</div>
+                        <div class="sourceListItem">2</div>
+                        <div class="sourceListItem">3</div>
+                    </div>
                 </div>
             </div>
             <div class='underpage hiddenpage' id='about'>

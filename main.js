@@ -24,14 +24,16 @@ let lastPlayed = 'nothingCurrentlyPlaying';
 
 const configFileDefaults = JSON.stringify({
     "app": {
-        "theme": "dark",
-        "closeToTray": "true"
+      "theme": "auto",
+      "closeToTray": "true"
     },
     "output": {
-        "combinedFormatting": "${Artists} - ${title}",
-        "artistSeparator": ", "
+      "pollFrequency": "5000",
+      "combinedFormatting": "`${artists} - ${title}`",
+      "artistSeparator": ", ",
+      "albumCoverSize": "2"
     }
-}, null, 2)
+  }, null, 2)
 
 contextMenu({
 	showInspectElement: true,
@@ -152,7 +154,20 @@ function getCurrentPlaying(callback) {
                 }
             })
             .catch(function (error) {
+                //fs.writeFileSync('./latestError.json', JSON.stringify(error, null, 2));
+
                 console.log(error);
+
+                if (error.response.status === 401) {
+                    console.log("caught error " + error.response.status + ", attempting to renew token.");
+                    triggerAuth(function() {
+                        console.log("Received new access token, retrying.");
+                        callback();
+                    });
+                }
+                else {
+                    console.log(error);
+                }
             });
     }
     else {
@@ -172,6 +187,17 @@ function triggerAuth(callback) {
 }
 
 function outputSongInfo(data, callback) {
+    // Checks if song is a local song since local songs don't support certain fields
+    if (data.item.is_local) {
+        // Sets template album cover since local song doesn't have it's own
+        albumCoverFilePath = './albumCoverLocalFile.jpeg';
+    }
+    else {
+        // Sets album cover
+        let albumCoverSize = config.output.albumCoverSize;
+        albumCoverURL = data.item.album.images[albumCoverSize].url;
+    }
+
     // Title
     let title = data.item.name;
 
@@ -184,13 +210,18 @@ function outputSongInfo(data, callback) {
         artists = artistList.join(artistSeparator);
     }
 
-    // Combined
-    let combinedFormatting = config.output.combinedFormatting;
-    let combined = eval(combinedFormatting);
+    // Checks so that neither artists nor title are empty, this is mostly incase you're listening to local songs that might not have artist specified.
+    // Also creates a combined output of text and artist, based on the template in the config.
+    let combined
+    if (artists !== '' && title !== '') {
+        let combinedFormatting = config.output.combinedFormatting;
+        combined = eval(combinedFormatting);
+    }
+    else if (artists === '') {
+        combined = title;
+    }
 
-    // Album cover
-    let albumCoverSize = config.output.albumCoverSize;
-    albumCoverURL = data.item.album.images[albumCoverSize].url;
+    // KEEP GOING FROM HERE 
 
     // Check to see if we're wasting our time writing info that's already there
     if (title + artists !== lastPlayed) {
@@ -204,7 +235,7 @@ function outputSongInfo(data, callback) {
             // Sends info to popOut display
             if (popOutWinId !== undefined) {
                 let popOutWin = BrowserWindow.fromId(popOutWinId);
-                popOutWin.webContents.send('refreshPopOutSongInfo', true, title, artists, '../../.' + albumCoverFilePath);    
+                popOutWin.webContents.send('refreshPopOutSongInfo', true, title, artists, albumCoverFilePath);    
             }
 
             console.log("Now playing: " + combined);
@@ -234,6 +265,17 @@ ipcMain.on('popOut', function(event, popOutTheme) {
 
     // Create new popout
     createPopOut(popOutThemePath, aspectRatio);
+});
+
+ipcMain.on('saveOptions', function(event, options) {
+    // Read current config
+    let config = require(configFilePath);
+
+    // Edit changed values
+    // config.output.pollFrequency = 5000;
+
+    // Write new config
+    fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
 });
 
 ipcMain.on('triggerRefreshPopOutList', function(event) {

@@ -12,4 +12,7 @@ This script requires [Node.js](https://nodejs.org/). After making sure you've go
 - Option to hide application under icon on top for macos or arrow for windows
 - Fix vulnerabilities `npm audit`
 - Package to portable executable
-- Load theme specific settings that push changes in realtime eg. color, transparency and scroll toggle.
+- Load theme specific settings that push changes in realtime eg. color, transparency, scroll toggle and custom background image.
+- Explore potentially adding support for more platforms. Web platforms could be solved through a firefox/chrome extension, osu! might be best to simply read the title of the application since that changes depending on the current beatmap. Drag items to order priority.
+- Progress bar
+- Tab with checkboxes for each application that we can get music info from. Include dragging them in a list to prioritize.

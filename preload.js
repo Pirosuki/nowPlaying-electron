@@ -5,7 +5,7 @@ const {
 
 contextBridge.exposeInMainWorld('api', {
         send: (channel, data) => {
-            let validChannels = ['toMain', 'popOut', 'triggerRefreshPopOutList'];
+            let validChannels = ['toMain', 'popOut', 'triggerRefreshPopOutList', 'saveOptions'];
             if (validChannels.includes(channel)) {
                 ipcRenderer.send(channel, data);
             }
